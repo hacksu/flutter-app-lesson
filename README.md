@@ -114,7 +114,7 @@ class Mouse {
     String _first;
     String _last;
     Mouse(this._first, this._last);
-    Mouse.defaultLastName(this._first): last_ = "Mouse";
+    Mouse.disneyStyleLastName(this._first): last_ = "Mouse";
     String toString() { return _first + "🐭" + _last; }
 }
 ```
@@ -122,7 +122,7 @@ class Mouse {
 So, we're creating a constructor called `defaultLastName` that takes only one argument, which gets automatically stored in `_first`. We're then using an initializer list, which is pretty much the same as in C++ except it actually uses the assignment operator instead of having a weird parentheses situation, to set `_last` to a value that's going to be the same every time this constructor is called. This is how you call a named constructor:
 
 ```dart
-Mouse mickey = Mouse.defaultLastName("Mickey");
+Mouse mickey = Mouse.disneyStyleLastName("Mickey");
 print(mickey);
 ```
 
@@ -130,4 +130,155 @@ So there you go.
 
 Named parameters and named constructors are two features that I and the author of the Flutter library both thought were useful. Now, Dart is a deep and complex language, and technically this code doesn't follow every possible best practice, which is why there are little blue lines in it in a few places. This DartPad editor is very opinionated about how exactly things should be done. But realistically, this is fine, and you don't have to learn Dart super deeply to use it. So, let's break out of the console and attempt to apply our partial knowledge to something more interactive.
 
-## Flutter
+## Flutter & Widgets
+
+Go to https://hacksu.com/flutter to get this starting template:
+
+```dart
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, annotate_overrides
+import 'package:flutter/material.dart';
+
+void main(){
+  runApp(ExampleApp());
+}
+
+
+class ExampleApp extends StatelessWidget {
+  Widget build(BuildContext context) {
+
+  }
+}
+```
+
+This is the basic, contentless template for a Flutter app. Don't worry too much about the details of it, since this is the kind of boilerplate that just gets copy/pasted, but: there is an import statement, which gives us access to code from the Flutter library. There is a main function, which simply calls `runApp()` from that library. There is a class called ExampleApp that extends and inherits from the Flutter class StatelessWidget and has a build function, which we will add to to create our app. And there is a comment up at the top that turns off compiler warnings that I disagree with.
+
+The heart of any Flutter app is contained within its `build` functions. In the `build` functions, you have the ability to create and return a Widget. The class "Widget" is very important in Flutter. An object of that class is responsible for providing the content for a rectangular region of the screen. So, it either has content of its own, like an image or some text, or it has children that have content. A Widget that does not itself store text or an image or something like that will store other Widgets that do have that content, and will do something useful like positioning them, or adding a background or an outline to them, or only displaying them if some condition is met. Or something like that.
+
+Every app starts off with a couple of widgets that don't really have content of their own, but that receive children that do. The first thing we're going to do is create an object using the class MaterialApp:
+
+```dart
+Widget build(BuildContext context) {
+    MaterialApp app = MaterialApp();
+
+    return app;
+}
+```
+
+A MaterialApp is like a mouse but more complicated. "Material design" is a buzzword that Google likes to throw around that encompasses some ideas and styles for user interfaces, so that's why that's the kind of app we have to make. We are now going to use a named argument to start to give our app some content.
+
+```dart
+Widget build(BuildContext context) {
+    MaterialApp app = MaterialApp(
+        home: Scaffold()
+    );
+
+    return app;
+}
+```
+
+A scaffold is a term sometimes used in programming to describe sort of a frame that you can hang things on. In other words, it also has no content of its own. We need one more step:
+
+```dart
+Widget build(BuildContext context) {
+    MaterialApp app = MaterialApp(
+        home: Scaffold(
+            body: Text("Hello World!")
+        )
+    );
+
+    return app;
+}
+```
+
+And there we have it: an app, with some content. Text is a type of Widget (it's a derived class of Widget, if you're curious) that actually has content, so now our Scaffold and Material App have something to display.
+
+### Wrapping Widgets in Widgets
+
+The problem is that it's up in the corner, which is an awkward place for it. To fix this, we need to bring in yet another contentless Widget. If we simply make a Center widget and give it our Text widget to display, the Center widget will take up as much space as possible and display our Text at the center of that. This is where we can use a fun feature that this editor has, which is automatic code editing. Click on the word "Text" in the code so that the blinking cursor is positioned in it. Then, use the keyboard shortcut Alt+Enter. You will then have the option to automatically put the Text widget in a Center widget for positioning.
+
+```dart
+MaterialApp app = MaterialApp(
+    home: Scaffold(
+        body: Center(child: Text("Hello World!"))
+    )
+);
+```
+
+And now when we run the app, we'll have the text in the center. And there's one more thing we can do to make this page look less dumb, which is to use the named parameter of the Text constructor to make the text larger. If you like, go to a function call and start to add a named parameter and press Ctrl-Space, you will see some suggestions for parameters you can add, which is helpful. We want the one called `textScaleFactor`.
+
+```dart
+MaterialApp app = MaterialApp(
+    home: Scaffold(
+        body: Center(child: Text("Hello World!", textScaleFactor: 3))
+    )
+);
+```
+
+So this is the most basic Flutter app. I'm going to add to it by adding another named parameter to the Scaffold constructor.
+
+```dart
+MaterialApp app = MaterialApp(
+    home: Scaffold(
+        body: Center(child: Text("Hello World!", textScaleFactor: 3))
+        appBar: AppBar(title: Text("This is my app :3")),
+    )
+);
+```
+
+So like I said, Flutter apps are based on the \~principles of Material Design~, which means that they come with a whole bunch of built-in ideas about how apps should be structured. That's why they have all these particular template-like things, like Scaffold, which gives you built in support for a title thing at the top of your page. Another thing that I see getting actually used more often is the navigation drawer.
+
+```dart
+// this is added to the Scaffold() constructor below appBar
+drawer: Drawer()
+```
+
+This is more of an actual thing. Drawer is another Widget that doesn't really have content, so we have to give it some. Generally, the child of a Drawer widget will be a ListView, and a ListView will have an array of children, meaning that it can display multiple child Widgets:
+
+```dart
+drawer: Drawer(
+    child: ListView(
+        children: [
+
+        ]
+    )
+)
+```
+
+Like in many dynamic languages, the way you create an array (technically called a list) in Dart is just by putting square brackets and then writing the contents of the list within them, with the items separated by commas. We'll start by putting one item in this array of children:
+
+```dart
+drawer: Drawer(
+    child: ListView(
+        children: [
+            Text("Menu", textScaleFactor: 2)
+        ]
+    )
+)
+```
+
+So yeah. There it is.
+
+Let's say we were unhappy with how the word Menu is wedged into the top left of this drawer that we've created. One easy way to fix that is to make it the child of a Padding widget; Padding widgets display their children but add space ("padding") around them.. Like before, we can click on the Text and press Alt-Enter to bring up the option to get the Text inside another widget.
+
+```dart
+children: [
+    Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text("Menu", textScaleFactor: 2),
+    )
+]
+```
+
+The Padding constructor takes two arguments. One of them is the child Widget that it's going to display. The other is an object that stores the amount of space the child Widget should have around it on the left side, the right side, the top, and the bottom. The class for this kind of object is EdgeInsets, since it stores how far the child will be inset from the edge.
+
+EdgeInsets.all is a named constructor! It sets the inset around all the edges to be, in this case 8.0. (You can use a floating point number here, but you don't have to.) If you want different amounts of padding on different sides of the text widget, you could use a different named constructor, like EdgeInsets.symmetric, which lets you set a different horizontal and vertical padding:
+
+```dart
+padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16)
+```
+
+So that's fun. Named constructors are a useful thing.
+
+### State Changes
+
+So now that we have a menu, we want to be able to select different pages based on it.
