@@ -214,7 +214,7 @@ So like I said, Flutter apps are based on the \~principles of Material Design~, 
 drawer: Drawer()
 ```
 
-This is more of an actual thing. Drawer is another Widget that doesn't really have content, so we have to give it some. Generally, the child of a Drawer widget will be a ListView, and a ListView will have an array of children, meaning that it will display multiple child Widgets:
+This is more of an actual thing. Drawer is another Widget that doesn't really have content, so we have to give it some. Generally, the child of a Drawer widget will be a ListView. ListView widgets let you view lists. A ListView will have an array of children, meaning that it will display multiple child Widgets:
 
 ```dart
 drawer: Drawer(
@@ -251,7 +251,7 @@ children: [
 ]
 ```
 
-The Padding constructor takes two arguments. One of them is the child Widget that it's going to display. The other is an object that stores the amount of space the child Widget should have around it on the left side, the right side, the top, and the bottom. The class for this kind of object is EdgeInsets, since it stores how far the child will be inset from the edge.
+The Padding constructor takes two arguments. One of them is the child Widget that it's going to display. The other is an object that stores the amount of space the child Widget should have around it on the left side, the right side, the top, and the bottom. The class for this kind of object is EdgeInsets, since it stores how far the child will be inset from the edge. The const keyword is an optional thing that declares values that can be fully computed and created in advance at compile time which is an optimization thing that we don't need to go into.
 
 EdgeInsets.all is a named constructor! Like I said, objects of the EdgeInsets class store different inset distances for the left, top, right, and bottom sides of the widgets they're used by. However, in this code, the named constructor EdgeInsets.all will set the insets around all the edges to be 8.0 pixels. (You can use a floating point number here, but you don't have to.) If you want different amounts of padding on different sides of the text widget, you could use a different named constructor, like EdgeInsets.symmetric, which lets you set a different horizontal and vertical padding:
 
@@ -346,3 +346,125 @@ if (currentPage = "Horse") {
 ```
 
 We can test this out by manually changing the default value of the `currentPage` variable to "Horse". But probably we want the user to be able to make this change.
+
+To do this, we're going to add some options to the Drawer menu. Underneath our padded title in the ListView in our Drawer, let's add a couple of ListTile widgets, which is a lot like a Text widget, but has some extra features that we're going to use.
+
+```dart
+children: [
+  Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+    child: Text("Menu", textScaleFactor: 2),
+  ),
+  ListTile(
+    title: Text("Home")
+  ),
+  ListTile(
+    title: Text("Horse")
+  ),
+]
+```
+
+This is a very sensible menu. We can now use the onTap named parameter of the ListTile constructor to give it a function to run when someone clicks or taps on it.
+
+This is going to be a little bit tricky, since we have multiple layers of functions to run. First, we want to create an event listener function, which is the one that will be called directly when someone clicks or taps on a ListTile. In Dart, functions usually have the fairly standard syntax where you put the return type of the function, then its name, then its argument list in parentheses, then the function body in curly braces. It turns out that in some contexts, you can leave out the first two of those things:
+
+```dart
+ListTile(
+  title: Text("Home"),
+  onTap: (){
+
+  }
+),
+```
+
+Although it does nothing, since the function body is empty, this is a real live function in Dart; we don't have to give it a name or a return type. The name is unnecessary since we won't be writing our own code that calls this function, and the return type is inferred from the fact that event listener functions only do stuff; they return nothing. (If we did try to return something from an event listener function like this, we'd get an error.) In that function, we need to create another function. In this function, we will call `setState`, which is a function that will update the variables of our State class and trigger the user interface to be re-drawn.
+
+```dart
+ListTile(
+  title: Text("Home"),
+  onTap: (){
+    setState();
+  }
+),
+```
+
+And as an argument to setState, we need to pass a mutator function, which will do the actual changing of the variables that I just mentioned. So, we need another anonymous callback function, inside our function call, inside our event listener callback function.
+
+It's pretty easy, though. It'll just set the currentPage variable to the value "Home":
+
+```dart
+ ListTile(
+  title: Text("Home"),
+  onTap: (){
+    setState((){
+      currentPage = "Home";
+    });
+  }
+)
+```
+
+So, there you go, I hope you like open and close brackets. Let's do the same thing in the other ListTile with the String value "Horse". If you want, you can just copy and paste:
+
+```dart
+ListTile(
+  title: Text("Home"),
+  onTap: (){
+    setState((){
+      currentPage = "Home";
+    });
+  }
+),
+ListTile(
+  title: Text("Horse"),
+  onTap: (){
+    setState((){
+      currentPage = "Horse";
+    });
+  }
+)
+```
+
+And look at that: clicking on our drawer items now does something.
+
+The only annoying thing is that our drawer stays open even as the stuff in the background changes. To change that, we just need to add one line to each of our event listener functions, underneath our calls to setState:
+
+```dart
+ListTile(
+  title: Text("Home"),
+  onTap: (){
+    setState((){
+      currentPage = "Home";
+    });
+    Navigator.pop(context);
+  }
+),
+ListTile(
+  title: Text("Horse"),
+  onTap: (){
+    setState((){
+      currentPage = "Horse";
+    });
+    Navigator.pop(context);
+  }
+)
+```
+
+We're not going to get into it, but in Flutter, there's the concept of a navigation stack that's stored in the current BuildContext, where when you do something like clicking on the drawer button at the top left of your app, you push an item onto it, and when you call .pop(), you then obviously pop the most recently pushed item off of it. Alternatively, don't worry about it, this is a magic drawer-closing function.
+
+So, this is where I leave you, with an extremely normal app that will no doubt become the next Uber. Believe it or not, this is pretty much the basic pattern of Flutter development; you alternate Widgets that arrange content, like Center and ListView, with Widgets that display content, like Image and Text. I made this gif that illustrates a couple other layout widgets and how they arrange stuff:
+
+![](widget.gif)
+
+So, yeah, there are rows and columns, and stacks that let you put widgets wherever and on top of each other. Fun.
+
+## Running Flutter Apps Locally
+
+The Flutter SDK is available for download here: https://docs.flutter.dev/get-started/install
+
+Once you download and install it, you should get access to many command line tools. You should be able to open a terminal window and enter `flutter create my_example` and get a new folder called "my_example" that has all the files necessary for a Flutter app in it. It might take a while, because Flutter will add the files necessary to compile your app for any platform: you'll get folders for Windows, MacOS, iOS, Android, et cetera. The only one that you need to modify is the "lib" folder; it will have a folder called main.dart that you can paste all your code from DartPad into.
+
+Then, we can go to the main project folder in the terminal and run our program with `flutter run`. Running a Flutter program in debug mode on your computer has advantages over using DartPad; for one thing, you can divide your code into more than one file, and for another, when you change code, the app will automatically reload much faster (even though the initial compilation takes a while).
+
+If you have an Android phone with developer mode and USB debugging turned on, it's also pretty easy to connect your device to your computer via USB, find it by running `flutter devices` in the terminal, and then run your app on your phone with `flutter run -d [your device's name]`. It's very convenient.
+
+![](running_on_phone.jpg)
