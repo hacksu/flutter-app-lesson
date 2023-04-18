@@ -281,4 +281,90 @@ So that's fun. Named constructors are a useful thing.
 
 ### State Changes
 
-So now that we have a menu, we want to be able to select different pages based on it.
+So now that we have a menu, in a drawer, and generally with such a menu in such a drawer you'll want to be able to click on things in it and select a new page to look at. We can do that, but there's a complication. Right now, what we have is a StatelessWidget. We have written a class that extends the StatelessWidget class, and StatelessWidgets do not have a way to store data and trigger updates to the screen when it changes. Like, we could add a member variable to this class, but changing it would not do anything. To create a Widget that can cause itself to be rebuilt and re-drawn, we need a StatefulWidget.
+
+Unfortunately, we can't just change "Stateless" to "Stateful" and call it a day. To create a Widget that can store data (its "state") and update the screen, we actually need two classes: one class that extends StatefulWidget, which will be practically empty, and one class that extends Flutter's "State" class, which will store data and have the build function and do all the actual work. I have looked at various explanations for why you need two classes to store data and update the screen and none of them make any sense. Fortunately, we have access to a code action that makes it easy to code this weird setup. If we click on StatelessWidget in the editor, press Alt-Enter, and choose "Convert to StatefulWidget", we will get the two classes we need: one that does nothing and one that gets the build method. So now we have that, and our code should still work just like before.
+
+The whole file at this point:
+
+```dart
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, annotate_overrides
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(ExampleApp());
+}
+
+class ExampleApp extends StatefulWidget {
+  @override
+  State<ExampleApp> createState() => _ExampleAppState();
+}
+
+class _ExampleAppState extends State<ExampleApp> {
+  Widget build(BuildContext context) {
+    MaterialApp app = MaterialApp(
+    home: Scaffold(
+        body: Center(child: Text("Hello World!", textScaleFactor: 3)),
+        appBar: AppBar(title: Text("This is my app :3")),
+        drawer: Drawer(
+          child: ListView(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                child: Text("Menu", textScaleFactor: 2),
+              )
+            ]
+          )
+        )
+      )
+    );
+
+    return app;
+  }
+}
+```
+
+So, now that we have our useful class and our useless class, let's store some data in the useful one. We can add a String variable called currentPage and make it default to "Home":
+
+```dart
+class _ExampleAppState extends State<ExampleApp> {
+    String currentPage = "Home";
+```
+
+Now we can use it to determine what should be the argument for the `body` named parameter in our `Scaffold` object. To do that, let's extract the thing we're currently using for that into a variable:
+
+```dart
+Widget build(BuildContext context) {
+    Widget appBody = Center(child: Text("Hello World!", textScaleFactor: 3));
+
+    MaterialApp app = MaterialApp(
+        home: Scaffold(
+            body: appBody,
+            appBar: AppBar(title: Text("This is my app :3")),
+            drawer: Drawer(
+                child: ListView(
+                    children: [
+                        Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                            child: Text("Menu", textScaleFactor: 2),
+                        )
+                    ]
+                )
+            )
+        )
+    );
+
+    return app;
+  }
+```
+
+Then, if we want to, we can reassign this variable based on the value of `currentPage` before we create our app:
+
+```dart
+Widget appBody = Center(child: Text("Hello World!", textScaleFactor: 3));
+if (currentPage = "Horse") {
+    appBody = Image.network()  // TODO: find horse pic
+}
+```
+
+We can test this out by manually changing the default value of the `currentPage` variable to "Horse". But probably we want the user to be able to make this change.
