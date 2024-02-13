@@ -224,7 +224,7 @@ class ExampleApp extends StatelessWidget {
 
 This is the basic, contentless template for a Flutter app. Don't worry too much about the details of it, since this is the kind of boilerplate that just gets copy/pasted, but: there is an import statement, which gives us access to code from the Flutter library. There is a main function, which calls `runApp()` from that library and gives it the named parameter "home" with an object of the class ExampleApp as the argument. There is a class called ExampleApp that extends and inherits from the Flutter class StatelessWidget and has a build function, which we will add to to create our app. And there is a comment up at the top that turns off compiler warnings that I disagree with.
 
-The heart of any Flutter app is contained within its `build` functions. In the `build` functions, you have the ability to create and return a Widget. The class "Widget" is very important in Flutter. An object of that class is responsible for providing the content for a rectangular region of the screen. It either has content of its own, like an image or some text, or it has children that have content. A Widget that does not itself store text or an image or something like that will store other Widgets that do have that content, and will do something useful like positioning them, or adding a background or an outline to them, or only displaying them if some condition is met. Or something like that.
+The heart of any Flutter app is contained within its `build` functions. In the `build` functions, you have the ability to create and return a Widget. The class "Widget" is very important in Flutter. An object of that class basically *manages* the content for a rectangular region of the screen. It will either display content of its own, like an image or some text, or it will have children that have content. A Widget that does not itself store text or an image or something like that will store other Widgets that do have that content, and will do something useful, like positioning them, or adding a background or an outline to them, or only displaying them if some condition is met. Or something like that. That's what I mean by *managing* the content in the region. (The region that a particular Widget "owns" on the screen is determined by where its parent Widget puts it.)
 
 Every app starts off with at least a couple of widgets that don't really have content of their own, but that receive children that do. The first thing we're going to do is create an object of the class Scaffold:
 
@@ -238,7 +238,212 @@ Widget build(BuildContext context) {
 }
 ```
 
+### Universe 1
+
 So, we're declaring a variable with the type "Widget." The type "Widget" is a broad type that means the variable can store many different things that all, as Widgets, represent the content of a region of the screen. Specifically, we're storing a Scaffold object in our Widget variable. A scaffold is like some sort of a frame that you can hang things on. In other words, it's one of those widgets that has no content of its own. We need one more step:
+
+```dart
+Widget scaffold = Scaffold(
+  appBar: AppBar(
+    title: Text("Look It's My App :3")
+  )
+);
+```
+
+So yeah. That's, like, the simplest possible technically-an-app Flutter app.
+
+First add Column, then Wrap With Padding:
+
+```dart
+class ExampleApp extends StatelessWidget {
+  Widget build(BuildContext context) {
+    Widget scaffold = Scaffold(
+      appBar: AppBar(
+        title: Text("Look It's My App :3")
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [Text("hi"), Divider(height: 25), Text("hello")]
+        ),
+      )
+    );
+    
+    return scaffold;
+  }
+}
+```
+
+Convert to Stateful widget, add member variables, iterate over them to add actual notes:
+
+```dart
+class _ExampleAppState extends State<ExampleApp> {
+  
+  List<String> notes = ["Hello world note!"];
+  int currentlyEditingNote = -1;  
+  
+  Widget build(BuildContext context) {
+    
+    List<Widget> noteWidgets = [Divider(height: 25)]; 
+    
+    for (int i = 0; i < notes.length; ++i) {
+      var text = Text(notes[i]);
+      noteWidgets.add(text);
+      noteWidgets.add(Divider(height: 25));
+    }
+    
+    Widget scaffold = Scaffold(
+      appBar: AppBar(
+        title: Text("Look It's My App :3")
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: noteWidgets
+        ),
+      )
+    );
+    
+    return scaffold;
+  }
+}
+```
+
+`GestureDetector` is a cooler name for a thing than, like, event listener.
+
+Let's spell out how callbacks work. This isn't enough:
+
+```dart
+for (int i = 0; i < notes.length; ++i) {
+  var text = Text(notes[i]);
+
+  void updateEditingNote() {
+    currentlyEditingNote = i;
+  }
+
+  var detector = GestureDetector(onTap: updateEditingNote, child: text);
+
+  noteWidgets.add(detector);
+  noteWidgets.add(Divider(height: 25));
+}
+```
+
+We need to call `setState`, which is a member function of `State`, and give it the updates that we want to make in order to have them affect our app. To give it these updates, we construct a function that does them and pass it in:
+
+```dart
+for (int i = 0; i < notes.length; ++i) {
+  var text = Text(notes[i]);
+
+  void updateEditingNote() {
+
+    void updateStateOnTap() {
+      currentlyEditingNote = i;
+      print("set currently editing note to ${i}");
+    }
+
+    setState(updateStateOnTap);
+  }
+
+  var detector = GestureDetector(onTap: updateEditingNote, child: text);
+
+  noteWidgets.add(detector);
+  noteWidgets.add(Divider(height: 25));
+}
+```
+
+So when the user taps one of these widgets, control goes into the `updateEditingNote` function, then into the `setState` function, then it calls `updateStateOnTap`. Tracing the flow of control in these situation is a valuable skill in these situations. You'll need it for design patterns in CS3.
+
+Then add text editing:
+
+```dart
+class _ExampleAppState extends State<ExampleApp> {
+  List<String> notes = ["Hello world note!", "Goodbye world note."];
+  int currentlyEditingNote = -1;
+  
+  var textInput = TextEditingController();
+
+  Widget build(BuildContext context) {
+    List<Widget> noteWidgets = [Divider(height: 25)];
+
+    for (int i = 0; i < notes.length; ++i) {
+      var text = Text(notes[i]);
+
+      void onTap() {
+        void updateStateOnTap() {
+          currentlyEditingNote = i;
+          print("set currently editing note to ${i}");
+        }
+        setState(updateStateOnTap);
+        textInput.text = notes[i];
+      }
+
+      var detector = GestureDetector(onTap: onTap, child: text);
+
+      noteWidgets.add(detector);
+      noteWidgets.add(Divider(height: 25));
+    }
+    
+    List<Widget> textInputWidgets = [
+      TextField(controller: textInput),
+      SizedBox(height: 10),
+      ElevatedButton(
+        child: Icon(Icons.save),
+        onPressed: (){
+          setState((){
+            notes[currentlyEditingNote] = textInput.text;
+            currentlyEditingNote = -1;
+          });
+        }
+      )
+    ];
+
+    Widget scaffold = Scaffold(
+      appBar: AppBar(title: Text("Look It's My App :3")),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: currentlyEditingNote == -1 ?
+              noteWidgets : 
+              textInputWidgets
+        ),
+      )
+    );
+
+    return scaffold;
+  }
+}
+```
+
+Add a floating add notes button:
+
+```dart
+Widget scaffold = Scaffold(
+  appBar: AppBar(title: Text("Look It's My App :3")),
+  body: Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: currentlyEditingNote == -1 ?
+          noteWidgets : 
+          textInputWidgets
+    ),
+  ),
+  floatingActionButton: FloatingActionButton(
+    onPressed: (){
+      setState(() {
+        notes.add("");
+        currentlyEditingNote = notes.length - 1;
+      });
+    }
+  )
+);
+```
+
+
+### Universe 2
 
 ```dart
 Widget build(BuildContext context) {
