@@ -8,7 +8,7 @@ HTML, CSS, and JavaScript have taken over the field of graphical user interfaces
 
 ## Dart: It is normal
 
-I'm assuming most of you have at least a little programming experience, for one thing because it's the end of the semester and taking CS1 is like bootcamp, and for another thing because the weather is warm now and if you were normal you'd be playing outside. We can run Dart code online by going to https://dartpad.dev; let's look at the "Hello World" example they have there.
+I'm assuming most of you have at least a little programming experience, for one thing because it's the end of the semester and taking CS1 is like bootcamp, and for another thing because the weather is warm now and if you were normal you'd be playing outside. We can run Dart code online by going to https://dartpad.dev. Let's look at the "Hello World" example they have there.
 
 ```dart
 void main() {
@@ -31,7 +31,7 @@ void printEvent(String time, String event) {
 }
 ```
 
-So, we are declaring a function. The return type of the function is `void`, meaning it does not return anything. It has two parameters: a String paramater called event and another String parameter called time. In Dart, the built-in string class has a name that starts with a capital letter and you don't have to #include or use std:: to use it. And we are taking these two arguments and concatenating strings to get an output. Let's call this in `main`:
+So, we are declaring a function. The return type of the function is `void`, meaning it does not return anything. It has two parameters: a String parameter called event and another String parameter called time. In Dart, the built-in string class has a name that starts with a capital letter and you don't have to #include or use std:: to use it. And we are taking these two arguments and concatenating strings to get an output. Let's call this in `main`:
 
 ```dart
 printEvent("7:00 PM", "meeting");
@@ -65,7 +65,7 @@ So now we don't have to worry about what order we're giving the arguments in; we
 
 ### Classes & Named Constructors
 
-And another thing that the Flutter library uses a lot is classes and objects. I'm guessing that you know that an object is a programming language construct that groups together some variables and the functions that should operate on those variables, and that many different versions or instances of objects can be made that store different data in those variables, and that objects, in most languages, come from classes, which are like blueprints for objects that show what variables and what functions objects they should contain. Everyone knows this. So, for example, if you have a Mouse class, you can use it to make objects with data that represents specific mice, and obviously for each mouse you're going to want to store a first and last name. So let's make a Mouse class:
+And another thing that the Flutter library uses a lot is classes and objects. I'm guessing that you know that an object is a programming language construct that groups together some variables and the functions that should operate on those variables, and that many different versions or instances of objects can be made that store different data in their copies of those variables, and that objects, in most languages, come from classes, which are like blueprints for objects that show what variables and what functions they should contain. Everyone knows this. So, for example, if you have a Mouse class, you can use it to make objects with data that represents specific mice, and obviously for each mouse you're going to want to store a first and last name. So let's make a Mouse class:
 
 ```dart
 class Mouse {
@@ -84,7 +84,7 @@ class Mouse {
 }
 ```
 
-This declares a constructor that has two parameters. The first will be automatically stored in the `_first` variable in the object we're creating; the second will automatically be stored in the `_last` variable. Now we can call the constructor in our main function:
+This declares a constructor that has two parameters. The first will be automatically stored in the `_first` variable in the object we're creating; the second will automatically be stored in the `_last` variable. Note how `this` always refers to the specific set of variables associated with a specific object that is currently in use. Now we can call the constructor in our main function:
 
 ```dart
 Mouse hatsune = Mouse("hatsune", "squeaku");
@@ -107,14 +107,14 @@ Now, in our main, we can print it:
 print(hatsune);
 ```
 
-So yeah. That's relatively simple. We're going to learn one more interesting Dart feature before we try using it in a Flutter project. This feature is known as named constructors. In most languages, constructors, unlike other functions, do not have names; constructors can be overloaded to accept different argument lists, but you pretty much have to figure out when you should use each constructor overload on your own. In Dart, constructors can have names that explain their purpose, just like normal functions. They look like this:
+So yeah. That's relatively simple. We're going to learn another interesting Dart feature that we can use in our Flutter project. This feature is known as named constructors. In most languages, constructors, unlike other functions, do not have names; constructors can be overloaded to accept different argument lists, but you pretty much have to figure out when you should use each constructor overload on your own. In Dart, constructors can have names that explain their purpose, just like normal functions. They look like this:
 
 ```dart
 class Mouse {
     String _first;
     String _last;
     Mouse(this._first, this._last);
-    Mouse.disneyStyleLastName(this._first): last_ = "Mouse";
+    Mouse.disneyStyleLastName(this._first): _last = "Mouse";
     String toString() { return _first + "🐭" + _last; }
 }
 ```
@@ -128,7 +128,79 @@ print(mickey);
 
 So there you go.
 
-Named parameters and named constructors are two features that I and the author of the Flutter library both thought were useful. Now, Dart is a deep and complex language, and technically this code doesn't follow every possible best practice, which is why there are little blue lines in it in a few places. This DartPad editor is very opinionated about how exactly things should be done. But realistically, this is fine, and you don't have to learn Dart super deeply to use it. So, let's break out of the console and attempt to apply our partial knowledge to something more interactive.
+Finally, I want to go on one more wild tangent that's general to programming languages and especially, for some reason, to this kind of programming: GUI programming with a lot of interacting parts. That topic is the general idea of evaluation, substitution, and order of operations. I want to draw a distinction between three uses of functions: you can just, call them; you can use their return values and basically substitute those into an expression; and/or, you can use a function as a value that's being stored somewhere to be called later. This last form of a function is called a callback and we'll get to it later.
+
+The print function is simple. You call it and it prints something. That's the first way you can use a function. We're learning a lot today.
+
+The second way is to use a function's return value for something. This is surprisingly deep. For the sake of argument, let's say you had a mathematical equation to solve. Something like 2 + 3 * 5. The first thing you would do to get started on solving it would be to take the 3 * 5 and substitute the result of that operation in for it, getting 2 + 15.
+
+That's also how I like to think about functions. You would do kind of the same if you were writing code, like `int result = 2 + multiply(3 * 5)`. When people start programming, people sometimes get nervous about doing things like that? They see things like `int result = multiply(3 * 5);` a lot, where the result of calling a function is directly stored in a variable, and they don't realize that they can use functions literally anywhere that, in this case, they could use the number 15. The return value of the function is just substituted right into where you call it.
+
+You can do some interesting things with this. For one thing, let's look at our class. Let's add one more field and one more function:
+
+```dart
+class Mouse {
+    String _first;
+    String _last;
+    int squeaksEmitted = 0;
+
+    Mouse(this._first, this._last);
+    Mouse.disneyStyleLastName(this._first): _last = "Mouse";
+    String toString() { return _first + "🐭" + _last; }
+    void squeak() {
+      print("squeak")
+      squeaksEmitted += 1;
+    }
+}
+```
+
+Now we can have our mouse squeak:
+
+```dart
+mickey.squeak();
+mickey.squeak();
+mickey.squeak();
+print(mickey.squeaksEmitted);
+```
+
+But this is kind of verbose. What if we make one simple change to our squeak function to make things easier?
+
+```dart
+Mouse squeak() {
+  print("squeak");
+  squeaksEmitted += 1;
+  return this;
+}
+```
+
+So, like I mentioned, `this` is a special keyword that refers to the object that the function was just called on, which in this case is `mickey`. Basically, if the function is called on Mickey (as in `mickey.squeak()`) it will then return `mickey`. (If it was called on `hatsune` it would return `hatsune`.) This lets us do this:
+
+```dart
+mickey.squeak().squeak().squeak();
+print(mickey.squeaksEmitted);
+```
+
+To do the same thing.
+
+This works because the call to `mickey.squeak()` is run and is replaced with what the return value is, which is `mickey`. So, the next `.squeak()` has `mickey` before it, so we're basically doing `mickey.squeak()` again. And you can continue this for as long as you want, or until "squeak" stops looking like a word anymore. That's called "chaining", and it's not Dart-specific, but is in fact in use in a couple of places; the first place I saw it was with the JavaScript library "sharp."
+
+There's one more way to use this which is less in use:
+
+```dart
+Function squeak() {
+  print("squeak");
+  squeaksEmitted += 1;
+  return squeak;
+}
+```
+
+Now we're not just returning the current object, `mickey`, from the function; we're returning the `squeak` function itself. So when we call `mouse.squeak()`, it essentially gets replaced with its return value, which is `mouse.squeak`. Without the parentheses. So we can put the parentheses again. Getting `mouse.squeak()()`, which basically calls squeak twice. And so on and so on: `mouse.squeak()()()()()()...`
+
+Now, some people would advise you to use, I don't know, loops to take some action over and over again in a concise fashion. (And Dart does have those.) But I feel like this usage is good when you don't really care enough to specify exactly how many times it happens. Like if you're making a game or a theme park attraction and you want a mouse to squeak, just, a whole bunch of times. So you slam some parentheses down.
+
+This isn't language specific either, although I don't have an exhaustive list of languages this would work in. I would love to see someone acccomplish this in C++.
+
+Anyway. Dart is a deep and complex language, and technically this code doesn't follow every possible best practice, which is why there are little blue lines in it in a few places. This DartPad editor is very opinionated about how exactly things should be done. But realistically, this is fine, and you don't have to learn Dart super deeply to use it. So, let's break out of the console and attempt to apply our partial knowledge to something more interactive.
 
 ## Flutter & Widgets
 
